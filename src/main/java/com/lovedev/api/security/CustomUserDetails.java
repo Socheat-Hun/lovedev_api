@@ -7,14 +7,13 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * Custom UserDetails implementation
- * Contains user information needed for authentication
+ * Custom UserDetails implementation with RBAC support
+ * Contains user information and permissions needed for authentication
  */
 @Getter
 public class CustomUserDetails implements UserDetails {
@@ -40,12 +39,20 @@ public class CustomUserDetails implements UserDetails {
 
     /**
      * Build CustomUserDetails from User entity
+     * Converts both roles and permissions to Spring Security authorities
      */
     public static CustomUserDetails build(User user) {
-        // Convert all roles to authorities
-        List<GrantedAuthority> authorities = user.getRoleSet().stream()
-                .map(role -> new SimpleGrantedAuthority(role.getAuthority()))
-                .collect(Collectors.toList());
+        Set<GrantedAuthority> authorities = new HashSet<>();
+
+        // Add roles as authorities (with ROLE_ prefix)
+        user.getRoles().forEach(role -> {
+            authorities.add(new SimpleGrantedAuthority(role.getName()));
+
+            // Add permissions from each role as authorities (without ROLE_ prefix)
+            role.getPermissions().forEach(permission -> {
+                authorities.add(new SimpleGrantedAuthority(permission.getName()));
+            });
+        });
 
         return new CustomUserDetails(
                 user.getId(),
@@ -56,7 +63,9 @@ public class CustomUserDetails implements UserDetails {
         );
     }
 
-    // UserDetails interface methods
+    // ============================================
+    // UserDetails Interface Methods
+    // ============================================
 
     @Override
     public String getUsername() {
@@ -93,8 +102,94 @@ public class CustomUserDetails implements UserDetails {
         return enabled;
     }
 
-    // Custom getters for our fields
+    // ============================================
+    // Custom Helper Methods
+    // ============================================
 
+    /**
+     * Get only role authorities (authorities that start with ROLE_)
+     */
+    public Set<String> getRoles() {
+        Set<String> roles = new HashSet<>();
+        for (GrantedAuthority authority : authorities) {
+            String auth = authority.getAuthority();
+            if (auth.startsWith("ROLE_")) {
+                roles.add(auth);
+            }
+        }
+        return roles;
+    }
+
+    /**
+     * Get only permission authorities (authorities that don't start with ROLE_)
+     */
+    public Set<String> getPermissions() {
+        Set<String> permissions = new HashSet<>();
+        for (GrantedAuthority authority : authorities) {
+            String auth = authority.getAuthority();
+            if (!auth.startsWith("ROLE_")) {
+                permissions.add(auth);
+            }
+        }
+        return permissions;
+    }
+
+    /**
+     * Check if user has specific role
+     */
+    public boolean hasRole(String roleName) {
+        String roleToCheck = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
+        return authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals(roleToCheck));
+    }
+
+    /**
+     * Check if user has specific permission
+     */
+    public boolean hasPermission(String permissionName) {
+        return authorities.stream()
+                .anyMatch(auth -> auth.getAuthority().equals(permissionName));
+    }
+
+    /**
+     * Check if user has any of the specified roles
+     */
+    public boolean hasAnyRole(String... roleNames) {
+        for (String roleName : roleNames) {
+            if (hasRole(roleName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if user has any of the specified permissions
+     */
+    public boolean hasAnyPermission(String... permissionNames) {
+        for (String permissionName : permissionNames) {
+            if (hasPermission(permissionName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public boolean isAdmin() {
+        return hasRole("ADMIN");
+    }
+
+    /**
+     * Check if user is manager or higher
+     */
+    public boolean isManagerOrHigher() {
+        return hasAnyRole("ADMIN", "MANAGER");
+    }
+
+    // Custom getters
     public UUID getId() {
         return id;
     }

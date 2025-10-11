@@ -2,9 +2,11 @@ package com.lovedev.api.config;
 
 import com.lovedev.api.security.CustomUserDetailsService;
 import com.lovedev.api.security.JwtAuthenticationFilter;
+import com.lovedev.api.security.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -30,6 +32,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
+//    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -46,7 +49,10 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**",
-                                "/actuator/health"
+                                "/actuator/health",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
+                                "/api/v1/oauth2/**"
                         ).permitAll()
 
                         // Admin endpoints
@@ -58,6 +64,11 @@ public class SecurityConfig {
                         // Authenticated endpoints
                         .anyRequest().authenticated()
                 )
+                // OAuth2 Login Configuration
+//                .oauth2Login(oauth2 -> oauth2
+//                        .successHandler(oAuth2AuthenticationSuccessHandler)
+//                        .failureUrl("/oauth2/error")
+//                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

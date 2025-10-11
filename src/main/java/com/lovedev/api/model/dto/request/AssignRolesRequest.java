@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Set;
 
 @Data
-public class UpdateRolesRequest {
+public class AssignRolesRequest {
 
     @NotEmpty(message = "At least one role is required")
     private Set<String> roleNames;

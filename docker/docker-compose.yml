@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: lovedev_postgres
@@ -20,34 +21,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-  keycloak:
-    image: quay.io/keycloak/keycloak:23.0
-    container_name: lovedev_keycloak
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
-      KC_DB_USERNAME: lovedev_user
-      KC_DB_PASSWORD: lovedev_pass123
-      KC_HOSTNAME: localhost
-      KC_HTTP_ENABLED: true
-      KC_HOSTNAME_STRICT_HTTPS: false
-    ports:
-      - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: start-dev
-    networks:
-      - lovedev_network
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
+  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: lovedev_redis
@@ -62,7 +38,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    command: redis-server --appendonly yes
 
+  # MailHog (Email testing)
   mailhog:
     image: mailhog/mailhog:latest
     container_name: lovedev_mailhog
@@ -71,11 +50,90 @@ services:
       - "8025:8025"  # Web UI
     networks:
       - lovedev_network
+    restart: unless-stopped
+
+  # Keycloak (Optional - Authentication)
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: lovedev_keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/lovedev_db
+      KC_DB_USERNAME: lovedev_user
+      KC_DB_PASSWORD: lovedev_pass123
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+    ports:
+      - "8180:8080"  # Changed to 8180 to avoid conflict
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: start-dev
+    networks:
+      - lovedev_network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    volumes:
+      - ./docker/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+
+  # Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lovedev_api
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lovedev_db
+      SPRING_DATASOURCE_USERNAME: lovedev_user
+      SPRING_DATASOURCE_PASSWORD: lovedev_pass123
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_MAIL_HOST: mailhog
+      SPRING_MAIL_PORT: 1025
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lovedev_network
+    volumes:
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
+  app_uploads:
+    driver: local
+  app_logs:
+    driver: local
 
 networks:
   lovedev_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

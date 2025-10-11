@@ -18,7 +18,7 @@ import java.util.List;
 public interface UserMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "emailVerified", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -29,8 +29,9 @@ public interface UserMapper {
     @Mapping(source = "firstName", target = "firstName")
     @Mapping(source = "lastName", target = "lastName")
     @Mapping(target = "fullName", expression = "java(user.getFullName())")
-    @Mapping(target = "roles", expression = "java(user.getRoleSet())")
-    @Mapping(target = "primaryRole", expression = "java(user.getPrimaryRole())")
+    @Mapping(target = "roles", expression = "java(user.getRoleNames())")
+    @Mapping(target = "permissions", expression = "java(user.getPermissionNames())")
+    @Mapping(target = "primaryRole", expression = "java(user.getPrimaryRole() != null ? user.getPrimaryRole().getName() : null)")
     UserResponse toResponse(User user);
 
     List<UserResponse> toResponseList(List<User> users);
@@ -39,7 +40,7 @@ public interface UserMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "password", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "roles", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "emailVerified", ignore = true)
     @Mapping(target = "createdAt", ignore = true)

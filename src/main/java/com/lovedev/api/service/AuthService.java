@@ -9,11 +9,11 @@ import com.lovedev.api.model.dto.request.*;
 import com.lovedev.api.model.dto.response.AuthResponse;
 import com.lovedev.api.model.dto.response.UserResponse;
 import com.lovedev.api.model.entity.RefreshToken;
+import com.lovedev.api.model.entity.Role;
 import com.lovedev.api.model.entity.User;
-import com.lovedev.api.model.entity.UserRole;
 import com.lovedev.api.model.enums.AuditAction;
-import com.lovedev.api.model.enums.Role;
 import com.lovedev.api.model.enums.UserStatus;
+import com.lovedev.api.repository.RoleRepository;
 import com.lovedev.api.repository.UserRepository;
 import com.lovedev.api.security.CustomUserDetails;
 import com.lovedev.api.security.JwtTokenProvider;
@@ -27,7 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.HashSet;
 import java.util.UUID;
 
 @Service
@@ -36,6 +36,7 @@ import java.util.UUID;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -51,13 +52,19 @@ public class AuthService {
             throw new EmailAlreadyExistsException("Email already registered: " + request.getEmail());
         }
 
+        // Get USER role (default role for new users)
+        Role userRole = roleRepository.findByName("ROLE_USER")
+                .orElseThrow(() -> new ResourceNotFoundException("Default USER role not found. Please contact administrator."));
+
         // Create user
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        Set<UserRole> oldRoles = user.getRoles();
-        user.setRoles(oldRoles);
         user.setStatus(UserStatus.INACTIVE);
         user.setEmailVerified(false);
+
+        // Assign USER role
+        user.setRoles(new HashSet<>());
+        user.addRole(userRole);
 
         // Generate email verification token
         String verificationToken = UUID.randomUUID().toString();
@@ -65,7 +72,7 @@ public class AuthService {
         user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(24));
 
         user = userRepository.save(user);
-        log.info("New user registered: {}", user.getEmail());
+        log.info("New user registered: {} with role: {}", user.getEmail(), userRole.getName());
 
         // Send verification email
         emailService.sendVerificationEmail(user.getEmail(), verificationToken, user.getFirstName());

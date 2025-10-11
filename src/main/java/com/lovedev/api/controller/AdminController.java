@@ -31,9 +31,9 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> searchUsers(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String role,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) Boolean emailVerified,
+            @RequestParam(required = false) String roleName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -41,9 +41,8 @@ public class AdminController {
 
         UserSearchRequest searchRequest = new UserSearchRequest();
         searchRequest.setKeyword(keyword);
-        if (role != null) {
-            searchRequest.setRole(com.lovedev.api.model.enums.Role.valueOf(role.toUpperCase()));
-        }
+        searchRequest.setRoleName(roleName);
+
         if (status != null) {
             searchRequest.setStatus(com.lovedev.api.model.enums.UserStatus.valueOf(status.toUpperCase()));
         }
@@ -69,7 +68,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("User updated successfully", response));
     }
 
-    @Operation(summary = "Update user role", description = "Update user role (Admin only)")
+    @Operation(summary = "Update user role", description = "Update user primary role (Admin only)")
     @PutMapping("/users/{id}/role")
     public ResponseEntity<ApiResponse<UserResponse>> updateUserRole(
             @PathVariable UUID id,
@@ -106,7 +105,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<UserResponse>> addRole(
             @PathVariable UUID id,
             @Valid @RequestBody AddRoleRequest request) {
-        UserResponse response = userService.addRole(id, request.getRole());
+        UserResponse response = userService.addRole(id, request.getRoleName());
         return ResponseEntity.ok(ApiResponse.success("Role added successfully", response));
     }
 
@@ -115,7 +114,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<UserResponse>> removeRole(
             @PathVariable UUID id,
             @Valid @RequestBody RemoveRoleRequest request) {
-        UserResponse response = userService.removeRole(id, request.getRole());
+        UserResponse response = userService.removeRole(id, request.getRoleName());
         return ResponseEntity.ok(ApiResponse.success("Role removed successfully", response));
     }
 
@@ -124,7 +123,7 @@ public class AdminController {
     public ResponseEntity<ApiResponse<UserResponse>> updateRoles(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateRolesRequest request) {
-        UserResponse response = userService.updateRoles(id, request.getRoles());
+        UserResponse response = userService.updateRoles(id, request.getRoleNames());
         return ResponseEntity.ok(ApiResponse.success("User roles updated successfully", response));
     }
 }

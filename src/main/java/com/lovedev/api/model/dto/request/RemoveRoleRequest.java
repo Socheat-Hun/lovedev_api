@@ -1,11 +1,11 @@
 package com.lovedev.api.model.dto.request;
 
-import com.lovedev.api.model.enums.Role;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
 public class RemoveRoleRequest {
-    @NotNull(message = "Role is required")
-    private Role role;
+
+    @NotBlank(message = "Role name is required")
+    private String roleName;
 }
