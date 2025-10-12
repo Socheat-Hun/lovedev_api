@@ -28,7 +28,7 @@ public class EmailService {
     @Async
     public void sendVerificationEmail(String to, String token, String userName) {
         String subject = "Verify Your Email - LoveDev";
-        String verificationUrl = "http://localhost:8081/api/v1/auth/verify-email?token=" + token;
+        String verificationUrl = "http://localhost:8080/api/v1/auth/verify-email?token=" + token;
 
         String htmlContent = String.format("""
             <!DOCTYPE html>

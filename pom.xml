@@ -160,6 +160,12 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -175,6 +181,24 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.ekryd.echo-maven-plugin</groupId>
+                <artifactId>echo-maven-plugin</artifactId>
+                <version>1.3.0</version>
+                <executions>
+                    <execution>
+                        <id>load-env</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>echo</goal>
+                        </goals>
+                        <configuration>
+                            <message>Loading environment variables from .env file</message>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

@@ -224,4 +224,35 @@ public class AuthService {
         // Log audit
         auditService.logAction(user, AuditAction.RESET_PASSWORD, "Password reset successfully");
     }
+
+    @Transactional
+    public void resendVerificationEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+
+        if (user.getEmailVerified()) {
+            throw new BadRequestException("Email already verified. Please login.");
+        }
+
+        // Check if user has been trying to resend too frequently (rate limiting)
+        if (user.getEmailVerificationExpiresAt() != null) {
+            LocalDateTime lastSent = user.getEmailVerificationExpiresAt().minusHours(24);
+            if (lastSent.isAfter(LocalDateTime.now().minusMinutes(5))) {
+                throw new BadRequestException(
+                        "Please wait a few minutes before requesting another verification email."
+                );
+            }
+        }
+
+        // Generate new verification token
+        String verificationToken = UUID.randomUUID().toString();
+        user.setEmailVerificationToken(verificationToken);
+        user.setEmailVerificationExpiresAt(LocalDateTime.now().plusHours(24));
+
+        userRepository.save(user);
+        log.info("Resending verification email to: {}", user.getEmail());
+
+        // Send verification email
+        emailService.sendVerificationEmail(user.getEmail(), verificationToken, user.getFirstName());
+    }
 }
