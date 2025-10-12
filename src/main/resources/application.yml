@@ -2,9 +2,6 @@ spring:
   application:
     name: lovedev_api
 
-  config:
-    import: optional:file:.env[.properties]
-
   profiles:
     active: dev  # Default profile
 

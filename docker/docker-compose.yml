@@ -13,7 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - lovedev_network
     healthcheck:
@@ -52,40 +51,6 @@ services:
       - lovedev_network
     restart: unless-stopped
 
-  # Keycloak (Optional - Authentication)
-  keycloak:
-    image: quay.io/keycloak/keycloak:23.0
-    container_name: lovedev_keycloak
-    environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin123
-      KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres:5432/lovedev_db
-      KC_DB_USERNAME: lovedev_user
-      KC_DB_PASSWORD: lovedev_pass123
-      KC_HOSTNAME: localhost
-      KC_HTTP_ENABLED: true
-      KC_HOSTNAME_STRICT_HTTPS: false
-      KC_HEALTH_ENABLED: true
-      KC_METRICS_ENABLED: true
-    ports:
-      - "8180:8080"  # Changed to 8180 to avoid conflict
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: start-dev
-    networks:
-      - lovedev_network
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    restart: unless-stopped
-    volumes:
-      - ./docker/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
-
   # Spring Boot Application
   app:
     build:
@@ -93,14 +58,40 @@ services:
       dockerfile: Dockerfile
     container_name: lovedev_api
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/lovedev_db
-      SPRING_DATASOURCE_USERNAME: lovedev_user
-      SPRING_DATASOURCE_PASSWORD: lovedev_pass123
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: prod
+
+      # Database
+      DATABASE_URL: jdbc:postgresql://postgres:5432/lovedev_db
+      DATABASE_USERNAME: lovedev_user
+      DATABASE_PASSWORD: lovedev_pass123
+
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-min-256-bits-long-change-in-production}
+
+      # Redis
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
-      SPRING_MAIL_HOST: mailhog
-      SPRING_MAIL_PORT: 1025
+
+      # Email
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@lovedev.com}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-LoveDev Team}
+      EMAIL_VERIFICATION_URL: ${EMAIL_VERIFICATION_URL:-http://localhost:8080/api/v1/auth/verify-email}
+      EMAIL_RESET_PASSWORD_URL: ${EMAIL_RESET_PASSWORD_URL:-http://localhost:3000/reset-password}
+
+      # OAuth2 - Google
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      # OAuth2 - GitHub
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+
+      # OAuth2 Redirect
+      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI:-http://localhost:3000/oauth2/redirect}
+
     ports:
       - "8080:8080"
     depends_on:
@@ -108,6 +99,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      mailhog:
+        condition: service_started
     networks:
       - lovedev_network
     volumes:

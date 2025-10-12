@@ -1,5 +1,9 @@
 # Development Environment Configuration
 spring:
+
+  config:
+    import: optional:file:.env.local[.properties]
+
   datasource:
     url: ${DATABASE_URL}
     username: ${DATABASE_USERNAME}

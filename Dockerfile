@@ -43,10 +43,6 @@ ENTRYPOINT ["java", \
     "-XX:+UseContainerSupport", \
     "-XX:MaxRAMPercentage=75.0", \
     "-Djava.security.egd=file:/dev/./urandom", \
+    "-Dspring.profiles.active=prod", \
     "-jar", \
     "app.jar"]
-
-# Optional: Add these JVM options for better performance
-# -XX:+UseG1GC
-# -XX:+UseStringDeduplication
-# -Dspring.profiles.active=prod
