@@ -17,7 +17,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -32,8 +31,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomUserDetailsService customUserDetailsService;
-//    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
-
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final PasswordEncoder passwordEncoder; // ✅ Inject instead of creating
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -52,7 +51,7 @@ public class SecurityConfig {
                                 "/actuator/health",
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/api/v1/oauth2/**"
+                                "/oauth2/**"
                         ).permitAll()
 
                         // Admin endpoints
@@ -64,11 +63,15 @@ public class SecurityConfig {
                         // Authenticated endpoints
                         .anyRequest().authenticated()
                 )
-                // OAuth2 Login Configuration
-//                .oauth2Login(oauth2 -> oauth2
-//                        .successHandler(oAuth2AuthenticationSuccessHandler)
-//                        .failureUrl("/oauth2/error")
-//                )
+                // ============================================
+                // ✅ ENABLED: OAuth2 Login Configuration
+                // ============================================
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/oauth2/authorization/google") // Optional: custom login page
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureUrl("/api/v1/oauth2/error")
+                        .permitAll()
+                )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -77,7 +80,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder);
         authProvider.setUserDetailsService(customUserDetailsService);
         return authProvider;
     }
@@ -85,10 +88,5 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager() {
         return new ProviderManager(List.of(authenticationProvider()));
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

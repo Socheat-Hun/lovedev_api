@@ -52,6 +52,42 @@ spring:
     livereload:
       enabled: true
 
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - email
+              - profile
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: Google
+
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - user:email
+              - read:user
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            client-name: GitHub
+
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
+
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: id
+
 # Application Configuration
 app:
   jwt:
@@ -82,7 +118,7 @@ app:
   email:
     from: ${EMAIL_FROM}
     from-name: ${EMAIL_FROM_NAME}
-    enabled: true  # ✅ Set to true to enable emails
+    enabled: true
     verification-url: ${EMAIL_VERIFICATION_URL}
     reset-password-url: ${EMAIL_RESET_PASSWORD_URL}
     host: localhost
@@ -123,48 +159,4 @@ management:
     redis:
       enabled: false
 
-  security:
-    oauth2:
-      client:
-        registration:
-          # Google OAuth2
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - openid
-              - email
-              - profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-            client-name: Google
 
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-            user-name-attribute: sub
-
-          # GitHub OAuth2
-          github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            scope:
-              - user:email
-              - read:user
-
-          # Keycloak (if you want to use it)
-          keycloak:
-            client-id: lovedev-api
-            client-secret: ${KEYCLOAK_CLIENT_SECRET}
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/keycloak"
-            scope:
-              - openid
-              - profile
-              - email
-
-#        provider:
-#          keycloak:
-#            issuer-uri: http://localhost:8080/realms/lovedev
-#            user-name-attribute: preferred_username
