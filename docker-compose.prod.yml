@@ -32,7 +32,6 @@ services:
     environment:
       # Spring Configuration
       SPRING_PROFILES_ACTIVE: prod
-
       # Database
       DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-lovedev_db}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
@@ -79,8 +78,8 @@ services:
     networks:
       - lovedev_network
     volumes:
-      - app_uploads:/app/uploads
-      - app_logs:/app/logs
+      - app_uploads:/uploads
+#      - app_logs:/app/logs
     restart: always
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
