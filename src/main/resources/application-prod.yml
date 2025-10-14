@@ -5,7 +5,7 @@ spring:
     import: optional:file:.env[.properties]
 
   datasource:
-    url: ${DATABASE_URL}
+    url: jdbc:postgresql://database-1.cnwwqe2qegm3.ap-southeast-2.rds.amazonaws.com:5432/postgres
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
     hikari:
