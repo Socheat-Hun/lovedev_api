@@ -33,7 +33,7 @@ services:
       # Spring Configuration
       SPRING_PROFILES_ACTIVE: prod
       # Database
-      DATABASE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-lovedev_db}
+      DATABASE_URL: ${DATABASE_URL}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
 
