@@ -29,7 +29,7 @@ USER spring:spring
 COPY --from=build /app/target/*.jar app.jar
 
 # Create uploads directory
-RUN mkdir -p /app/uploads
+#RUN mkdir -p /app/uploads
 
 # Expose port
 EXPOSE 8080
