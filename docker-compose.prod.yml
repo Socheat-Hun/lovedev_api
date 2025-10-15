@@ -1,18 +1,17 @@
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:16-alpine
-    container_name: lovedev_postgres
-    environment:
-      POSTGRES_DB: ${DATABASE_URL}
-      POSTGRES_USER: ${DATABASE_USERNAME}
-      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: lovedev_redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - redis_data:/data
     networks:
       - lovedev_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME}"]
+      test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,57 +28,33 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: lovedev_api
+    env_file:
+      - .env
     environment:
-      # Spring Configuration
       SPRING_PROFILES_ACTIVE: prod
-      # Database
+
+      # Database (use RDS connection)
       DATABASE_URL: ${DATABASE_URL}
       DATABASE_USERNAME: ${DATABASE_USERNAME}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
 
-      # JWT
-      JWT_SECRET: ${JWT_SECRET}
-
       # Redis
-#      SPRING_DATA_REDIS_HOST: redis
-#      SPRING_DATA_REDIS_PORT: 6379
-#      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
 
-      # Email
-      MAIL_HOST: ${MAIL_HOST}
-      MAIL_PORT: ${MAIL_PORT}
-      MAIL_USERNAME: ${MAIL_USERNAME}
-      MAIL_PASSWORD: ${MAIL_PASSWORD}
-      EMAIL_FROM: ${EMAIL_FROM}
-      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
-      EMAIL_VERIFICATION_URL: ${EMAIL_VERIFICATION_URL}
-      EMAIL_RESET_PASSWORD_URL: ${EMAIL_RESET_PASSWORD_URL}
-      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
-      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
+      # File uploads
+      FILE_UPLOAD_DIR: /app/uploads
 
-      # OAuth2
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-not-set}
-      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-not-set}
-      OAUTH2_REDIRECT_URI: ${OAUTH2_REDIRECT_URI}
-
-      # CORS
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
-
-      # JVM Options
-      JAVA_OPTS: "-Xms512m -Xmx1024m"
-
+    depends_on:
+      redis:
+        condition: service_healthy
     ports:
       - "8080:8080"
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - lovedev_network
     volumes:
-      - app_uploads:/uploads
-#      - app_logs:/app/logs
+      - app_uploads:/app/uploads
+      - app_logs:/app/logs
     restart: always
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
@@ -116,8 +91,6 @@ services:
         max-file: "3"
 
 volumes:
-  postgres_data:
-    driver: local
   redis_data:
     driver: local
   app_uploads:

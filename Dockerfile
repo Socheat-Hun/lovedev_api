@@ -1,48 +1,53 @@
-# Multi-stage build for Spring Boot application
-
+# ======================================
 # Stage 1: Build
+# ======================================
 FROM maven:3.9.11-eclipse-temurin-17-alpine AS build
 
 WORKDIR /app
 
-# Copy pom.xml and download dependencies (for better caching)
+# Copy dependency files first for caching
 COPY pom.xml .
-COPY .mvn .mvn
 COPY mvnw .
+COPY .mvn .mvn
 RUN chmod +x mvnw
 RUN ./mvnw dependency:go-offline -B
 
-# Copy source code and build
+# Copy source and build
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
 
+# ======================================
 # Stage 2: Runtime
+# ======================================
 FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Create non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
+# (1) Create necessary directories and user before copying files
+RUN addgroup -S spring && adduser -S spring -G spring \
+    && mkdir -p /app/uploads /app/logs \
+    && chown -R spring:spring /app
+
+# Switch to non-root
 USER spring:spring
 
 # Copy jar from build stage
 COPY --from=build /app/target/*.jar app.jar
 
-# Create uploads directory
-#RUN mkdir -p /app/uploads
-
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check for container monitoring
 HEALTHCHECK --interval=30s --timeout=3s --start-period=60s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
-# Run the application
+# (2) Allow runtime env vars for config (matches your application-prod.yml)
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# (3) Run the app with container-aware memory settings
 ENTRYPOINT ["java", \
     "-XX:+UseContainerSupport", \
     "-XX:MaxRAMPercentage=75.0", \
     "-Djava.security.egd=file:/dev/./urandom", \
-    "-Dspring.profiles.active=prod", \
     "-jar", \
     "app.jar"]
