@@ -57,7 +57,7 @@ services:
       - app_logs:/app/logs
     restart: always
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "https://api.lovedev.me/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
