@@ -60,7 +60,7 @@ spring:
               - openid
               - email
               - profile
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "${BASE_URL_API}/login/oauth2/code/{registrationId}"
             client-name: Google
 
           github:
@@ -69,7 +69,7 @@ spring:
             scope:
               - user:email
               - read:user
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+            redirect-uri: "${BASE_URL_API}/login/oauth2/code/{registrationId}"
             client-name: GitHub
 
         provider:
