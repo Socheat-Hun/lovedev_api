@@ -133,6 +133,9 @@ server:
     include-exception: false
   compression:
     enabled: true
+  app:
+    base-url-api: ${BASE_URL_API}
+    base-url-web: ${BASE_URL_WEB}
 
 # Actuator for Production
 management:

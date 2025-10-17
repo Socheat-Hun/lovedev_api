@@ -26,7 +26,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     private final OAuth2Service oAuth2Service;
 
-    @Value("${app.oauth2.redirect-uri:http://localhost:3000/oauth2/redirect}")
+    @Value("${app.oauth2.redirect-uri}")
     private String redirectUri;
 
     @Override

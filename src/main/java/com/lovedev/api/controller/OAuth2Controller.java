@@ -27,8 +27,10 @@ public class OAuth2Controller {
 
     private final OAuth2Service oAuth2Service;
 
-    @Value("${app.oauth2.redirect-uri:http://localhost:3000/oauth2/redirect}")
+    @Value("${app.oauth2.redirect-uri}")
     private String redirectUri;
+    @Value("${server.app.base-url-web}")
+    private String baseUrlApi;
 
     @Operation(
             summary = "OAuth2 callback handler",
@@ -120,12 +122,9 @@ public class OAuth2Controller {
     public ResponseEntity<ApiResponse<Map<String, String>>> getOAuth2LoginUrls() {
         Map<String, String> loginUrls = new HashMap<>();
 
-        // Generate OAuth2 authorization URLs
-        String baseUrl = "http://localhost:8080"; // Should be configurable
-
-        loginUrls.put("google", baseUrl + "/oauth2/authorization/google");
-        loginUrls.put("github", baseUrl + "/oauth2/authorization/github");
-        loginUrls.put("facebook", baseUrl + "/oauth2/authorization/facebook");
+        loginUrls.put("google", baseUrlApi + "/oauth2/authorization/google");
+        loginUrls.put("github", baseUrlApi + "/oauth2/authorization/github");
+        loginUrls.put("facebook", baseUrlApi + "/oauth2/authorization/facebook");
 
         return ResponseEntity.ok(ApiResponse.success("OAuth2 login URLs", loginUrls));
     }

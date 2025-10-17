@@ -57,12 +57,12 @@ public class OpenApiConfig {
                                 
                                 ### Default Admin:
                                 - Email: admin@lovedev.com
-                                - Password: Admin@123
+                                - Password: admin@123
                                 """)
                         .contact(new Contact()
                                 .name("LoveDev Team")
                                 .email("support@lovedev.com")
-                                .url("https://lovedev.com"))
+                                .url("https://lovedev.me"))
                         .license(new License()
                                 .name("Apache 2.0")
                                 .url("https://www.apache.org/licenses/LICENSE-2.0.html")))
@@ -71,7 +71,7 @@ public class OpenApiConfig {
                                 .url("http://localhost:" + serverPort)
                                 .description("Development Server"),
                         new Server()
-                                .url("https://api.lovedev.com")
+                                .url("https://api.lovedev.me")
                                 .description("Production Server")))
                 .tags(List.of(
                         new Tag()

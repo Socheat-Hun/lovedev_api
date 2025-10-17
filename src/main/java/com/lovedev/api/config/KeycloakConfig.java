@@ -17,7 +17,7 @@ public class KeycloakConfig {
     /**
      * Keycloak server URL
      */
-    private String serverUrl = "http://localhost:8080";
+    private String serverUrl = "https://api.lovedev.me";
 
     /**
      * Keycloak realm name

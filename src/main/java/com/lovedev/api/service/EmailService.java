@@ -25,10 +25,16 @@ public class EmailService {
     @Value("${app.email.from-name}")
     private String fromName;
 
+    @Value("${server.app.base-url-api}")
+    private String baseUrlApi;
+
+    @Value("${server.app.base-url-web}")
+    private String baseUrlWeb;
+
     @Async
     public void sendVerificationEmail(String to, String token, String userName) {
         String subject = "Verify Your Email - LoveDev";
-        String verificationUrl = "http://localhost:8080/api/v1/auth/verify-email?token=" + token;
+        String verificationUrl = baseUrlApi+"/api/v1/auth/verify-email?token=" + token;
 
         String htmlContent = String.format("""
             <!DOCTYPE html>
@@ -73,7 +79,7 @@ public class EmailService {
     @Async
     public void sendPasswordResetEmail(String to, String token, String userName) {
         String subject = "Reset Your Password - LoveDev";
-        String resetUrl = "http://localhost:3000/reset-password?token=" + token;
+        String resetUrl = baseUrlWeb+"/reset-password?token=" + token;
 
         String htmlContent = String.format("""
             <!DOCTYPE html>
