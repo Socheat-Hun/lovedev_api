@@ -20,7 +20,9 @@ spring:
       hibernate:
         format_sql: false
         use_sql_comments: false
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
     enabled: true
