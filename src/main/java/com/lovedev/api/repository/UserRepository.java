@@ -34,8 +34,15 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "     OR LOWER(u.last_name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:status IS NULL OR u.status = CAST(:status AS VARCHAR)) " +
-            "AND (:emailVerified IS NULL OR u.email_verified = :emailVerified) " +
-            "ORDER BY u.created_at DESC",
+            "AND (:emailVerified IS NULL OR u.email_verified = :emailVerified)",
+            countQuery = "SELECT COUNT(*) FROM users u " +
+                    "WHERE (u.deleted_at IS NULL) " +
+                    "AND (:keyword IS NULL " +
+                    "     OR LOWER(u.first_name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                    "     OR LOWER(u.last_name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+                    "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+                    "AND (:status IS NULL OR u.status = CAST(:status AS VARCHAR)) " +
+                    "AND (:emailVerified IS NULL OR u.email_verified = :emailVerified)",
             nativeQuery = true)
     Page<User> searchUsers(@Param("keyword") String keyword,
                            @Param("status") UserStatus status,
