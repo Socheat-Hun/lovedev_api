@@ -142,10 +142,11 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        // Convert keyword to lowercase for case-insensitive search
         String keyword = searchRequest.getKeyword();
         if (keyword != null && !keyword.isEmpty()) {
             keyword = keyword.toLowerCase().trim();
+        } else {
+            keyword = null; // Explicitly set to null
         }
 
         Page<User> userPage;
@@ -153,7 +154,7 @@ public class UserService {
         // If role filter is provided, use the role-aware search
         if (searchRequest.getRoleName() != null && !searchRequest.getRoleName().isEmpty()) {
             userPage = userRepository.searchUsersWithRole(
-                    keyword,  // ← Using lowercase keyword
+                    keyword,
                     searchRequest.getStatus(),
                     searchRequest.getEmailVerified(),
                     searchRequest.getRoleName(),
@@ -162,7 +163,7 @@ public class UserService {
         } else {
             // Otherwise use the simpler search without role
             userPage = userRepository.searchUsers(
-                    keyword,  // ← Using lowercase keyword
+                    keyword,
                     searchRequest.getStatus(),
                     searchRequest.getEmailVerified(),
                     pageable
