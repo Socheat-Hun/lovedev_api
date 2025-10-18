@@ -156,7 +156,7 @@ public class UserService {
         } else {
             // Otherwise use the simpler search without role
             userPage = userRepository.searchUsers(
-                    searchRequest.getKeyword(),
+                    searchRequest.getKeyword().toLowerCase(),
                     searchRequest.getStatus(),
                     searchRequest.getEmailVerified(),
                     pageable

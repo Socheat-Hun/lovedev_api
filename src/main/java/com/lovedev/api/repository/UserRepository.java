@@ -28,9 +28,10 @@ public interface UserRepository extends JpaRepository<User, UUID> {
      * Keyword searches in: firstName, lastName, email
      */
     @Query("SELECT u FROM User u WHERE " +
-            "(:keyword IS NULL OR LOWER(u.firstName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-            "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+            "(:keyword IS NULL OR " +
+            "u.firstName LIKE CONCAT('%', :keyword, '%') OR " +
+            "u.lastName LIKE CONCAT('%', :keyword, '%') OR " +
+            "u.email LIKE CONCAT('%', :keyword, '%')) AND " +
             "(:status IS NULL OR u.status = :status) AND " +
             "(:emailVerified IS NULL OR u.emailVerified = :emailVerified)")
     Page<User> searchUsers(@Param("keyword") String keyword,
