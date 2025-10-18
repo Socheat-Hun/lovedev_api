@@ -34,7 +34,8 @@ public interface UserRepository extends JpaRepository<User, UUID> {
             "     OR LOWER(u.last_name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "     OR LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
             "AND (:status IS NULL OR u.status = CAST(:status AS VARCHAR)) " +
-            "AND (:emailVerified IS NULL OR u.email_verified = :emailVerified)",
+            "AND (:emailVerified IS NULL OR u.email_verified = :emailVerified) " +
+            "ORDER BY u.created_at DESC",
             nativeQuery = true)
     Page<User> searchUsers(@Param("keyword") String keyword,
                            @Param("status") UserStatus status,
