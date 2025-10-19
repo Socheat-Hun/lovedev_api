@@ -28,11 +28,6 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: lovedev_api
-    resources:
-      limits:
-        memory: 1G        # ← Add memory limit
-      reservations:
-        memory: 512M      # ← Add memory reservation
     env_file:
       - .env
     environment:
@@ -49,6 +44,9 @@ services:
 
       # File uploads
       FILE_UPLOAD_DIR: /app/uploads
+      JAVA_OPTS: "-Xms256m -Xmx512m -XX:+UseG1GC"
+    mem_limit: 1g          # ← Correct syntax
+    mem_reservation: 512m  # ← Correct syntax
 
     depends_on:
       redis:
