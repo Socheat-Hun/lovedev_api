@@ -12,6 +12,14 @@ spring:
       maximum-pool-size: 10
       minimum-idle: 5
 
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 5
+        queue-capacity: 100
+      thread-name-prefix: async-
+
   jpa:
     hibernate:
       ddl-auto: validate

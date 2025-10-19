@@ -28,6 +28,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: lovedev_api
+    resources:
+      limits:
+        memory: 1G        # ← Add memory limit
+      reservations:
+        memory: 512M      # ← Add memory reservation
     env_file:
       - .env
     environment:
