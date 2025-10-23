@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +43,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuditService auditService;
     private final FileStorageService fileStorageService;
+    private final FCMService fcmService;
 
     // ============================================
     // Profile Management (Current User)
@@ -380,5 +382,45 @@ public class UserService {
         values.put("dateOfBirth", user.getDateOfBirth());
         values.put("bio", user.getBio());
         return values;
+    }
+
+
+    // Add these methods to UserService.java
+
+    @Transactional
+    public UserResponse updateFCMToken(FCMTokenRequest request) {
+        User user = getCurrentUserEntity();
+
+        user.setFcmToken(request.getFcmToken());
+        user.setFcmTokenUpdatedAt(LocalDateTime.now());
+        user = userRepository.save(user);
+
+        log.info("FCM token updated for user: {}", user.getEmail());
+
+        // Subscribe to user-specific topics
+        fcmService.subscribeToTopic(request.getFcmToken(), "user_" + user.getId());
+
+        // Subscribe to role-based topics
+        user.getRoles().forEach(role -> {
+            fcmService.subscribeToTopic(request.getFcmToken(), "role_" + role.getName().toLowerCase());
+        });
+
+        return userMapper.toResponse(user);
+    }
+
+    @Transactional
+    public void removeFCMToken() {
+        User user = getCurrentUserEntity();
+
+        if (user.getFcmToken() != null) {
+            // Unsubscribe from topics
+            fcmService.unsubscribeFromTopic(user.getFcmToken(), "user_" + user.getId());
+
+            user.setFcmToken(null);
+            user.setFcmTokenUpdatedAt(null);
+            userRepository.save(user);
+
+            log.info("FCM token removed for user: {}", user.getEmail());
+        }
     }
 }

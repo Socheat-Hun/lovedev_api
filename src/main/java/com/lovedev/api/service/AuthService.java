@@ -44,6 +44,7 @@ public class AuthService {
     private final EmailService emailService;
     private final AuditService auditService;
     private final UserMapper userMapper;
+    private final FCMService fcmService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -77,6 +78,9 @@ public class AuthService {
         // Send verification email
         emailService.sendVerificationEmail(user.getEmail(), verificationToken, user.getFirstName());
 
+        // Send FCM notification (if token is provided during registration)
+        fcmService.sendEmailVerificationNotification(user);
+
         // Log audit
         auditService.logAction(user, AuditAction.REGISTER, "User registered successfully");
 
@@ -109,6 +113,9 @@ public class AuthService {
 
         // Send welcome email
         emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
+
+        // Send FCM notification
+        fcmService.sendEmailVerifiedNotification(user);
 
         // Log audit
         auditService.logAction(user, AuditAction.VERIFY_EMAIL, "Email verified successfully");
@@ -255,4 +262,5 @@ public class AuthService {
         // Send verification email
         emailService.sendVerificationEmail(user.getEmail(), verificationToken, user.getFirstName());
     }
+
 }

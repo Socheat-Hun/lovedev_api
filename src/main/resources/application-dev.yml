@@ -123,6 +123,10 @@ app:
     verification-url: ${EMAIL_VERIFICATION_URL}
     reset-password-url: ${EMAIL_RESET_PASSWORD_URL}
 
+  firebase:
+    enabled: ${FIREBASE_ENABLED}
+    service-account-file: ${FIREBASE_SERVICE_ACCOUNT_FILE}
+
 # Logging for Production
 logging:
   level:

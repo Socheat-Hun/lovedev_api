@@ -1,6 +1,7 @@
 package com.lovedev.api.controller;
 
 import com.lovedev.api.model.dto.request.ChangePasswordRequest;
+import com.lovedev.api.model.dto.request.FCMTokenRequest;
 import com.lovedev.api.model.dto.request.UpdateUserRequest;
 import com.lovedev.api.model.dto.response.ApiResponse;
 import com.lovedev.api.model.dto.response.UserResponse;
@@ -147,5 +148,21 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteAvatar() {
         userService.deleteAvatar();
         return ResponseEntity.ok(ApiResponse.success("Avatar deleted successfully", null));
+    }
+
+
+    @Operation(summary = "Register FCM token", description = "Register FCM token for push notifications")
+    @PostMapping("/me/fcm-token")
+    public ResponseEntity<ApiResponse<UserResponse>> registerFCMToken(
+            @Valid @RequestBody FCMTokenRequest request) {
+        UserResponse response = userService.updateFCMToken(request);
+        return ResponseEntity.ok(ApiResponse.success("FCM token registered successfully", response));
+    }
+
+    @Operation(summary = "Remove FCM token", description = "Remove FCM token (logout from device)")
+    @DeleteMapping("/me/fcm-token")
+    public ResponseEntity<ApiResponse<Void>> removeFCMToken() {
+        userService.removeFCMToken();
+        return ResponseEntity.ok(ApiResponse.success("FCM token removed successfully", null));
     }
 }

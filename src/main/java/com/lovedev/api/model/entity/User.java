@@ -89,6 +89,12 @@ public class User {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
+    @Column(name = "fcm_token_updated_at")
+    private LocalDateTime fcmTokenUpdatedAt;
+
     // Many-to-Many relationship with Roles
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
