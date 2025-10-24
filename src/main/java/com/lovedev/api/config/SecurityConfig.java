@@ -58,9 +58,10 @@ public class SecurityConfig {
 
                         // Manager endpoints
                         .requestMatchers(HttpMethod.GET, "/api/v1/users").hasAnyRole("MANAGER", "ADMIN")
-
+                        .requestMatchers("/api/v1/users/me/fcm-token").authenticated()
                         // Authenticated endpoints
-                        .anyRequest().authenticated()
+                        .anyRequest()
+                        .authenticated()
                 )
                 // ============================================
                 // ✅ ENABLED: OAuth2 Login Configuration
