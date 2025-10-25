@@ -56,7 +56,7 @@ public class OpenApiConfig {
                                 4. Now you can test all protected endpoints
                                 
                                 ### Default Admin:
-                                - Email: admin@lovedev.com
+                                - Email: admin@lovedev.me
                                 - Password: admin@123
                                 """)
                         .contact(new Contact()

@@ -11,4 +11,5 @@ public class FCMTokenRequest {
 
     private String deviceType; // "android", "ios", "web"
     private String deviceId;
+    private String deviceName;
 }

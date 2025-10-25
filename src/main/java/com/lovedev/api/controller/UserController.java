@@ -5,6 +5,7 @@ import com.lovedev.api.model.dto.request.FCMTokenRequest;
 import com.lovedev.api.model.dto.request.UpdateUserRequest;
 import com.lovedev.api.model.dto.response.ApiResponse;
 import com.lovedev.api.model.dto.response.UserResponse;
+import com.lovedev.api.service.FCMService;
 import com.lovedev.api.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class UserController {
 
     private final UserService userService;
+    private final FCMService fcmService;
 
     @Operation(
             summary = "Get current user profile",
@@ -148,6 +150,13 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> deleteAvatar() {
         userService.deleteAvatar();
         return ResponseEntity.ok(ApiResponse.success("Avatar deleted successfully", null));
+    }
+
+    @Operation(summary = "Register FCM token", description = "Register device token for push notifications")
+    @PostMapping("/me/fcm-token")
+    public ResponseEntity<ApiResponse<Void>> registerFCMToken(@Valid @RequestBody FCMTokenRequest request) {
+        fcmService.registerFCMToken(request);
+        return ResponseEntity.ok(ApiResponse.success("FCM token registered successfully", null));
     }
 
 }

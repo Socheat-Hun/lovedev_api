@@ -308,7 +308,7 @@ INSERT INTO users (
     status,
     email_verified
 ) VALUES (
-             'admin@lovedev.com',
+             'admin@lovedev.me',
              '$2a$10$O6Aipmy8tD2H94nc7PPfV.2lJyxWWZvvSig3HdzuvJ51SXkgjZSWm',
              'Admin',
              'User',

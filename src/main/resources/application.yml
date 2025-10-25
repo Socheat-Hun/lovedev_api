@@ -3,7 +3,7 @@ spring:
     name: lovedev_api
 
   profiles:
-    active: dev  # Default profile
+    active: prod  # Default profile
 
   servlet:
     multipart:
