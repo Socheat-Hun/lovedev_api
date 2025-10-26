@@ -3,6 +3,7 @@ package com.lovedev.api.controller;
 import com.lovedev.api.model.dto.request.*;
 import com.lovedev.api.model.dto.response.ApiResponse;
 import com.lovedev.api.model.dto.response.NotificationResponse;
+import com.lovedev.api.model.dto.response.NotificationSettingsResponse;
 import com.lovedev.api.model.dto.response.PageResponse;
 import com.lovedev.api.model.entity.NotificationSettings;
 import com.lovedev.api.service.FCMService;
@@ -103,16 +104,16 @@ public class NotificationController {
 
     @Operation(summary = "Get notification settings", description = "Get user notification preferences")
     @GetMapping("/settings")
-    public ResponseEntity<ApiResponse<NotificationSettings>> getNotificationSettings() {
-        NotificationSettings settings = fcmService.getNotificationSettings();
+    public ResponseEntity<ApiResponse<NotificationSettingsResponse>> getNotificationSettings() {
+        NotificationSettingsResponse settings = fcmService.getNotificationSettings();
         return ResponseEntity.ok(ApiResponse.success(settings));
     }
 
     @Operation(summary = "Update notification settings", description = "Update user notification preferences")
     @PutMapping("/settings")
-    public ResponseEntity<ApiResponse<NotificationSettings>> updateNotificationSettings(
+    public ResponseEntity<ApiResponse<NotificationSettingsResponse>> updateNotificationSettings(
             @Valid @RequestBody NotificationSettingsRequest request) {
-        NotificationSettings settings = fcmService.updateNotificationSettings(request);
+        NotificationSettingsResponse settings = fcmService.updateNotificationSettings(request);
         return ResponseEntity.ok(ApiResponse.success("Notification settings updated successfully", settings));
     }
 

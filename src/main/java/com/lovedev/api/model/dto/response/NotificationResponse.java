@@ -26,6 +26,9 @@ public class NotificationResponse {
     @Schema(description = "Notification title", example = "Welcome to LoveDev")
     private String title;
 
+    @Schema(description = "Notification body/message content", example = "Your account has been activated successfully")
+    private String body;
+
     @Schema(description = "Notification message", example = "Your account has been activated successfully")
     private String message;
 

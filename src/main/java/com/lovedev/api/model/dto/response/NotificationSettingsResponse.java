@@ -10,6 +10,10 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Simplified Notification Settings Response that matches the Entity
+ * This DTO only includes fields that actually exist in the NotificationSettings entity
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,60 +22,27 @@ import java.util.UUID;
 @Schema(description = "Notification settings response")
 public class NotificationSettingsResponse {
 
-    @Schema(description = "Settings ID")
+    @Schema(description = "Settings ID", example = "123e4567-e89b-12d3-a456-426614174000")
     private UUID id;
 
     @Schema(description = "Push notifications enabled", example = "true")
     private Boolean pushEnabled;
 
-    @Schema(description = "Info notifications enabled", example = "true")
-    private Boolean pushInfo;
-
-    @Schema(description = "Success notifications enabled", example = "true")
-    private Boolean pushSuccess;
-
-    @Schema(description = "Warning notifications enabled", example = "true")
-    private Boolean pushWarning;
-
-    @Schema(description = "Error notifications enabled", example = "true")
-    private Boolean pushError;
-
-    @Schema(description = "Announcement notifications enabled", example = "true")
-    private Boolean pushAnnouncement;
-
-    @Schema(description = "Reminder notifications enabled", example = "true")
-    private Boolean pushReminder;
-
-    @Schema(description = "Message notifications enabled", example = "true")
-    private Boolean pushMessage;
-
-    @Schema(description = "System notifications enabled", example = "true")
-    private Boolean pushSystem;
-
-    @Schema(description = "Promotion notifications enabled", example = "false")
-    private Boolean pushPromotion;
-
-    @Schema(description = "Update notifications enabled", example = "true")
-    private Boolean pushUpdate;
-
     @Schema(description = "Email notifications enabled", example = "true")
     private Boolean emailEnabled;
 
-    @Schema(description = "Email digest enabled", example = "false")
-    private Boolean emailDigest;
+    @Schema(description = "System notifications enabled", example = "true")
+    private Boolean systemNotifications;
 
-    @Schema(description = "Quiet hours enabled", example = "false")
-    private Boolean quietHoursEnabled;
+    @Schema(description = "Account notifications enabled", example = "true")
+    private Boolean accountNotifications;
 
-    @Schema(description = "Quiet hours start time", example = "22:00")
-    private String quietHoursStart;
+    @Schema(description = "Security alerts enabled (recommended to keep true)", example = "true")
+    private Boolean securityAlerts;
 
-    @Schema(description = "Quiet hours end time", example = "08:00")
-    private String quietHoursEnd;
-
-    @Schema(description = "Creation timestamp")
+    @Schema(description = "Creation timestamp", example = "2024-10-26T10:00:00")
     private LocalDateTime createdAt;
 
-    @Schema(description = "Last update timestamp")
+    @Schema(description = "Last update timestamp", example = "2024-10-26T11:30:00")
     private LocalDateTime updatedAt;
 }

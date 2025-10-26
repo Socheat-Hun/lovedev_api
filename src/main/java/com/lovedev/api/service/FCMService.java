@@ -7,6 +7,7 @@ import com.lovedev.api.model.dto.request.FCMTokenRequest;
 import com.lovedev.api.model.dto.request.NotificationSettingsRequest;
 import com.lovedev.api.model.dto.request.SendBulkNotificationRequest;
 import com.lovedev.api.model.dto.request.SendNotificationRequest;
+import com.lovedev.api.model.dto.response.NotificationSettingsResponse;
 import com.lovedev.api.model.entity.FCMToken;
 import com.lovedev.api.model.entity.Notification;
 import com.lovedev.api.model.entity.NotificationSettings;
@@ -94,18 +95,12 @@ public class FCMService {
     // Notification Settings
     // ============================================
 
+    /**
+     * Get notification settings for current user
+     * Returns DTO to avoid LazyInitializationException
+     */
     @Transactional(readOnly = true)
-    public NotificationSettings getNotificationSettings() {
-        UUID userId = SecurityHelper.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        return notificationSettingsRepository.findByUser(user)
-                .orElseGet(() -> createDefaultSettings(user));
-    }
-
-    @Transactional
-    public NotificationSettings updateNotificationSettings(NotificationSettingsRequest request) {
+    public NotificationSettingsResponse getNotificationSettings() {
         UUID userId = SecurityHelper.getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -113,6 +108,24 @@ public class FCMService {
         NotificationSettings settings = notificationSettingsRepository.findByUser(user)
                 .orElseGet(() -> createDefaultSettings(user));
 
+        // Convert Entity to DTO
+        return mapToResponse(settings);
+    }
+
+    /**
+     * Update notification settings for current user
+     * Returns DTO to avoid LazyInitializationException
+     */
+    @Transactional
+    public NotificationSettingsResponse updateNotificationSettings(NotificationSettingsRequest request) {
+        UUID userId = SecurityHelper.getCurrentUserId();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        NotificationSettings settings = notificationSettingsRepository.findByUser(user)
+                .orElseGet(() -> createDefaultSettings(user));
+
+        // Update only provided fields
         if (request.getPushEnabled() != null) {
             settings.setPushEnabled(request.getPushEnabled());
         }
@@ -132,7 +145,25 @@ public class FCMService {
         settings = notificationSettingsRepository.save(settings);
         log.info("Notification settings updated for user: {}", user.getEmail());
 
-        return settings;
+        // Convert Entity to DTO
+        return mapToResponse(settings);
+    }
+
+    /**
+     * Helper method to convert NotificationSettings Entity to Response DTO
+     * This prevents LazyInitializationException and circular reference issues
+     */
+    private NotificationSettingsResponse mapToResponse(NotificationSettings settings) {
+        return NotificationSettingsResponse.builder()
+                .id(settings.getId())
+                .pushEnabled(settings.getPushEnabled())
+                .emailEnabled(settings.getEmailEnabled())
+                .systemNotifications(settings.getSystemNotifications())
+                .accountNotifications(settings.getAccountNotifications())
+                .securityAlerts(settings.getSecurityAlerts())
+                .createdAt(settings.getCreatedAt())
+                .updatedAt(settings.getUpdatedAt())
+                .build();
     }
 
     private NotificationSettings createDefaultSettings(User user) {
